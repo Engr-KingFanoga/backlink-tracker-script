@@ -117,8 +117,22 @@ function checkBacklinksForBatch(startRow, endRow) {
       // Fetch the website URL.
       var websiteResponse = UrlFetchApp.fetch(websiteUrl, {muteHttpExceptions: true, followRedirects: true});
       if (websiteResponse.getResponseCode() !== 200) {
-        status = "missing";
-        remark = "Website fetch error: " + websiteResponse.getResponseCode();
+        if (websiteResponse.getResponseCode() === 404) {
+          status = "missing";
+          remark = "Website not found (404)";
+        }
+        else if (websiteResponse.getResponseCode() === 403) {
+          status = "unknown";
+          remark = "Website forbidden (403)";
+        }
+        else if (websiteResponse.getResponseCode() === 500) {
+          status = "missing";
+          remark = "Website internal server error (500)";
+        }
+        else {
+          status = "missing";
+          remark = "Website fetch error: " + websiteResponse.getResponseCode();
+        }
       } else {
         // Fetch the VEED URL.
         var veedResponse = UrlFetchApp.fetch(veedUrl, {muteHttpExceptions: true, followRedirects: true});
