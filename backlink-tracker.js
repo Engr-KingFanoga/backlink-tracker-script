@@ -191,6 +191,8 @@ function checkBacklinksForBatch(startRow, endRow) {
       statusCell.setBackground("#FF0000");  // Red
     } else if (status === "missing" && (remark.includes("Website fetch error") || remark.includes("VEED fetch error"))) {
       statusCell.setBackground("#FFA500");  // Orange
+    } else if (status === "unknown") {
+      statusCell.setBackground("#800080");  // Purple
     } else {
       statusCell.setBackground("#FFFF00");  // Yellow (default for other missing cases)
     }
@@ -200,7 +202,7 @@ function checkBacklinksForBatch(startRow, endRow) {
       addToEmailQueue(websiteUrl, veedUrl, currentTime, remark);
     }
   }
-}
+} 
 
 /**
  * Deletes all triggers that call the processBacklinkBatch function.
