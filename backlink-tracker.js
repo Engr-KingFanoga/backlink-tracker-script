@@ -117,17 +117,9 @@ function checkBacklinksForBatch(startRow, endRow) {
       // Fetch the website URL.
       var websiteResponse = UrlFetchApp.fetch(websiteUrl, {muteHttpExceptions: true, followRedirects: true});
       if (websiteResponse.getResponseCode() !== 200) {
-        if (websiteResponse.getResponseCode() === 404) {
-          status = "missing";
-          remark = "Website not found (404)";
-        }
-        else if (websiteResponse.getResponseCode() === 403) {
+        if (websiteResponse.getResponseCode() === 403) {
           status = "unknown";
-          remark = "Website forbidden (403)";
-        }
-        else if (websiteResponse.getResponseCode() === 500) {
-          status = "missing";
-          remark = "Website internal server error (500)";
+          remark = "Website fetch error: 403 (website forbidden)";
         }
         else {
           status = "missing";
@@ -187,18 +179,28 @@ function checkBacklinksForBatch(startRow, endRow) {
     remarkCell.setValue(remark);
 
     // Apply color coding based on status
-    if (status === "live" && remark === "") {
+    if (status === "live") {
       statusCell.setBackground("#00FF00");  // Green
-    } else if (status === "live" && remark === "nofollow link") {
-      statusCell.setBackground("#ADD8E6");  // Light Blue
-    } else if (status === "missing" && remark === "Backlink not found on page") {
+      if (remark === "") {
+        remarkCell.setBackground("#FFFFFF");  // White
+      } else if (remark === "nofollow link") {
+        remarkCell.setBackground("#E0FFFF");  // Light Cyan
+      } else if (remark === "http version found") {
+        remarkCell.setBackground("#F5FFFA");  // Mint Cream
+      } else if (remark === "nofollow link (http version)") {
+        remarkCell.setBackground("#E0FFFF");  // Light Cyan
+      }
+    } else if (status === "missing") {
       statusCell.setBackground("#FF0000");  // Red
-    } else if (status === "missing" && (remark.includes("Website fetch error") || remark.includes("VEED fetch error"))) {
-      statusCell.setBackground("#FFA500");  // Orange
+      if (remark === "Backlink not found on page" || remark === "Link not found in anchor tag") {
+        remarkCell.setBackground("#FFFFFF");  // White
+      } else if (remark.includes(websiteResponse.getResponseCode()) || remark.includes(veedResponse.getResponseCode())) {
+        remarkCell.setBackground("#FFA500");  // Orange
+      } else {
+        remarkCell.setBackground("#FFFF00");  // Yellow (default for other missing cases)
+      }
     } else if (status === "unknown") {
-      statusCell.setBackground("#800080");  // Purple
-    } else {
-      statusCell.setBackground("#FFFF00");  // Yellow (default for other missing cases)
+      statusCell.setBackground("#E6E6FA");  // Lavender
     }
     
     // Optionally, if a row is marked "missing", add it to an email queue.
