@@ -194,13 +194,14 @@ function checkBacklinksForBatch(startRow, endRow) {
       statusCell.setBackground("#FF0000");  // Red
       if (remark === "Backlink not found on page" || remark === "Link not found in anchor tag") {
         remarkCell.setBackground("#FFFFFF");  // White
-      } else if (remark.includes(websiteResponse.getResponseCode()) || remark.includes(veedResponse.getResponseCode())) {
+      } else if (remark.includes("Website fetch error:") || remark.includes("VEED fetch error:")) {
         remarkCell.setBackground("#FFA500");  // Orange
       } else {
         remarkCell.setBackground("#FFFF00");  // Yellow (default for other missing cases)
       }
     } else if (status === "unknown") {
       statusCell.setBackground("#E6E6FA");  // Lavender
+      remarkCell.setBackground("#FFA500");  // Orange
     }
     
     // Optionally, if a row is marked "missing", add it to an email queue.
