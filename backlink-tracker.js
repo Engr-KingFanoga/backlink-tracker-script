@@ -142,28 +142,32 @@ function checkBacklinksForBatch(startRow, endRow) {
         } else {
           // Both pages are reachable. Now check if the website content contains the VEED URL.
           var websiteContent = websiteResponse.getContentText();
-          if (websiteContent.indexOf(veedUrl) !== -1) {
-            // Look for an anchor tag containing the veedUrl.
-            var escapedVeedUrl = veedUrl.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            var regex = new RegExp('<a\\s[^>]*href=["\']' + escapedVeedUrl + '["\'][^>]*>', 'i');
+          // Create an array with both the HTTPS and HTTP versions.
+          var versions = [veedUrl, veedUrl.replace("https://", "http://")];
+          var found = false;
+          
+          for (var j = 0; j < versions.length; j++) {
+            var version = versions[j];
+            var escapedVersion = version.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            var regex = new RegExp('<a\\s[^>]*href=["\']' + escapedVersion + '["\'][^>]*>', 'i');
             var match = websiteContent.match(regex);
             if (match) {
-              var anchorTag = match[0];
-              // Check if the anchor tag contains a "nofollow" in the rel attribute.
-              if (/rel\s*=\s*["'][^"']*nofollow[^"']*["']/i.test(anchorTag)) {
+              // Determine if "nofollow" exists in the anchor tag.
+              if (/rel\s*=\s*["'][^"']*nofollow[^"']*["']/i.test(match[0])) {
                 status = "live";
-                remark = "nofollow link";
+                remark = (j === 1) ? "nofollow link (http version)" : "nofollow link";
               } else {
                 status = "live";
-                remark = "";
+                remark = (j === 1) ? "http version found" : "";
               }
-            } else {
-              status = "missing";
-              remark = "Link not found in anchor tag";
+              found = true;
+              break;
             }
-          } else {
+          }
+          
+          if (!found) {
             status = "missing";
-            remark = "Backlink not found on page";
+            remark = "Link not found in anchor tag";
           }
         }
       }
