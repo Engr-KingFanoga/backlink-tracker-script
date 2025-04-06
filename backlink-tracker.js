@@ -164,8 +164,18 @@ function checkBacklinksForBatch(startRow, endRow) {
         }
       }
     } catch (e) {
-      status = "missing";
-      remark = "Exception: " + e.toString();
+      var errorMessage = e.toString().toLowerCase();
+      
+      // Check for common SSL-related phrases
+      if (errorMessage.includes("ssl") || 
+          errorMessage.includes("certificate") || 
+          errorMessage.includes("handshake") || 
+          errorMessage.includes("secure connection")) {
+        status = "unknown";
+      } else {
+        status = "missing";
+      }
+      remark = e.toString();
     }
     
     // Update the sheet for this row.
