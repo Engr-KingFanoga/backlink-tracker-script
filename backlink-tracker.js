@@ -157,9 +157,21 @@ function checkBacklinksForBatch(startRow, endRow) {
             }
           }
           
+          // If not found, check for any VEED.io link
+          if (!found) {
+            var veedPattern = /https?:\/\/(www\.)?veed\.io\/[^\s"'<>]*/gi;
+            var veedMatches = websiteContent.match(veedPattern);
+            if (veedMatches && veedMatches.length > 0) {
+              status = "live";
+              remark = "Different VEED link(s) found: " + veedMatches.join(", ");
+              found = true;
+            }
+          }
+          
+          // If still not found, then VEED backlink is missing
           if (!found) {
             status = "missing";
-            remark = "Link not found in anchor tag";
+            remark = "";
           }
         }
       }
@@ -199,10 +211,12 @@ function checkBacklinksForBatch(startRow, endRow) {
         remarkCell.setBackground("#F5FFFA");  // Mint Cream
       } else if (remark === "nofollow link (http version)") {
         remarkCell.setBackground("#E0FFFF");  // Light Cyan
+      } else if (remark.includes("Different VEED link(s) found:")) {
+        remarkCell.setBackground("#90EE90"); // Light green
       }
     } else if (status === "missing") {
       statusCell.setBackground("#FF0000");  // Red
-      if (remark === "Backlink not found on page" || remark === "Link not found in anchor tag") {
+      if (remark === "") {
         remarkCell.setBackground("#FFFFFF");  // White
       } else if (remark.includes("Website fetch error:") || remark.includes("VEED fetch error:")) {
         remarkCell.setBackground("#FFA500");  // Orange
