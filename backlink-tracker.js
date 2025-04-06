@@ -123,7 +123,37 @@ function checkBacklinksForBatch(startRow, endRow) {
         }
         else {
           status = "missing";
-          remark = "Website fetch error: " + websiteResponse.getResponseCode();
+          // Check for specific error codes and set remarks accordingly.
+          if (websiteResponse.getResponseCode() === 400) {
+            remark = "Website fetch error: 400 (bad request)";
+          }
+          else if (websiteResponse.getResponseCode() === 401) {
+            remark = "Website fetch error: 401 (unauthorized)";
+          }
+          else if (websiteResponse.getResponseCode() === 404) {
+            remark = "Website fetch error: 404 (page not found)";
+          }
+          else if (websiteResponse.getResponseCode() === 408) {
+            remark = "Website fetch error: 408 (request timeout)";
+          }
+          else if (websiteResponse.getResponseCode() === 429) {
+            remark = "Website fetch error: 429 (too many requests)";
+          }
+          else if (websiteResponse.getResponseCode() === 500) {
+            remark = "Website fetch error: 500 (internal server error)";
+          }
+          else if (websiteResponse.getResponseCode() === 502) {
+            remark = "Website fetch error: 502 (bad gateway)";
+          }
+          else if (websiteResponse.getResponseCode() === 503) {
+            remark = "Website fetch error: 503 (service unavailable)";
+          }
+          else if (websiteResponse.getResponseCode() === 504) {
+            remark = "Website fetch error: 504 (gateway timeout)";
+          }
+          else {
+            remark = "Website fetch error: " + websiteResponse.getResponseCode() + " (unexpected error)";
+          }
         }
       } else {
         // Fetch the VEED URL.
