@@ -202,30 +202,30 @@ function checkBacklinksForBatch(startRow, endRow) {
 
     // Apply color coding based on status
     if (status === "live") {
-      statusCell.setBackground("#00FF00");  // Green
+      statusCell.setBackground("#1BB544");  // Dark Pastel Green
       if (remark === "") {
         remarkCell.setBackground("#FFFFFF");  // White
       } else if (remark === "nofollow link") {
-        remarkCell.setBackground("#E0FFFF");  // Light Cyan
+        remarkCell.setBackground("#1C9AB6");  // Blue Green
       } else if (remark === "http version found") {
-        remarkCell.setBackground("#F5FFFA");  // Mint Cream
+        remarkCell.setBackground("#1BB559");  // Pigment Green
       } else if (remark === "nofollow link (http version)") {
-        remarkCell.setBackground("#E0FFFF");  // Light Cyan
+        remarkCell.setBackground("#1C9AB6");  // Blue Green
       } else if (remark.includes("Different VEED link(s) found:")) {
-        remarkCell.setBackground("#90EE90"); // Light green
+        remarkCell.setBackground("#1BB58C"); // Mint
       }
     } else if (status === "missing") {
-      statusCell.setBackground("#FF0000");  // Red
+      statusCell.setBackground("#C63A3A");  // Persian Red
       if (remark === "") {
         remarkCell.setBackground("#FFFFFF");  // White
       } else if (remark.includes("Website fetch error:") || remark.includes("VEED fetch error:")) {
-        remarkCell.setBackground("#FFA500");  // Orange
+        remarkCell.setBackground("#C75F3A");  // Flame
       } else {
-        remarkCell.setBackground("#FFFF00");  // Yellow (default for other missing cases)
+        remarkCell.setBackground("#C7723A");  // Cocoa brown (default for other missing cases)
       }
     } else if (status === "unknown") {
-      statusCell.setBackground("#E6E6FA");  // Lavender
-      remarkCell.setBackground("#FFA500");  // Orange
+      statusCell.setBackground("#F7B32B");  // Xanthous
+      remarkCell.setBackground("#E6E6FA");  // Lavender
     }
     
     // Optionally, if a row is marked "missing", add it to an email queue.
