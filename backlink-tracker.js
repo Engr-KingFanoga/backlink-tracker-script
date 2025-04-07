@@ -120,15 +120,19 @@ function checkBacklinksForBatch(startRow, endRow) {
         if (websiteResponse.getResponseCode() === 403) {
           status = "unknown";
           remark = "Website fetch error: 403 (website forbidden)";
+        } 
+        else if (websiteResponse.getResponseCode() === 401) {
+          status = "unknown";
+          remark = "Website fetch error: 401 (unauthorized)";
         }
         else {
           status = "missing";
           // Check for specific error codes and set remarks accordingly.
-          if (websiteResponse.getResponseCode() === 400) {
-            remark = "Website fetch error: 400 (bad request)";
+          if (websiteResponse.getResponseCode() === 202) {
+            remark = "Website fetch error: 202 (accepted (but unexpected error))";
           }
-          else if (websiteResponse.getResponseCode() === 401) {
-            remark = "Website fetch error: 401 (unauthorized)";
+          else if (websiteResponse.getResponseCode() === 400) {
+            remark = "Website fetch error: 400 (bad request)";
           }
           else if (websiteResponse.getResponseCode() === 404) {
             remark = "Website fetch error: 404 (page not found)";
@@ -150,6 +154,12 @@ function checkBacklinksForBatch(startRow, endRow) {
           }
           else if (websiteResponse.getResponseCode() === 504) {
             remark = "Website fetch error: 504 (gateway timeout)";
+          }
+          else if (websiteResponse.getResponseCode() === 520) {
+            remark = "Website fetch error: 520 (Cloudflare unknown error)";
+          }
+          else if (websiteResponse.getResponseCode() === 522) {
+            remark = "Website fetch error: 522 (Cloudflare connection timed out)";
           }
           else {
             remark = "Website fetch error: " + websiteResponse.getResponseCode() + " (unexpected error)";
