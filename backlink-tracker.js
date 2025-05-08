@@ -7,74 +7,86 @@ function startMonthlyBatchProcessing() {
   // Reset the progress counter (starting at row 2, assuming row 1 is header)
   var scriptProperties = PropertiesService.getScriptProperties();
   scriptProperties.setProperty("currentRow", "2");
+  scriptProperties.setProperty("currentSheetIndex", "0");
+
+  // List of sheet names to process
+  var sheetsToProcess = ["RAW DATA", "2025 RAW", "2026 RAW"];
+  scriptProperties.setProperty("sheetsToProcess", JSON.stringify(sheetsToProcess));
   
   // Create a minute trigger to run processBacklinkBatch() every 5 minute.
   ScriptApp.newTrigger("processBacklinkBatch")
            .timeBased()
            .everyMinutes(5)
            .create();
-  Logger.log("Monthly processing started: Minute trigger created.");
+  Logger.log("Monthly processing started for multiple sheets.");
 }
 
 /**
  * This function is executed every minute by a time-driven trigger.
  * It processes a batch of rows and then updates the progress counter.
- * When all rows have been processed, it deletes its own trigger.
+ * When all rows in all sheets have been processed, it deletes its own trigger.
  **/
-
 function processBacklinkBatch() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("RAW DATA");  // Change if your sheet has a different name.
-  if (!sheet) {
-    Logger.log("RAW DATA Sheet not found. Exiting batch processing.");
-    // Delete it
+  var scriptProperties = PropertiesService.getScriptProperties();
+
+  // Retrieve the current row and current sheet index from script properties
+  var currentRow = parseInt(scriptProperties.getProperty("currentRow"), 10);
+  var currentSheetIndex = parseInt(scriptProperties.getProperty("currentSheetIndex"), 10);
+  
+  // Retrieve the list of sheets to process (stored as JSON string)
+  var sheetsToProcess = JSON.parse(scriptProperties.getProperty("sheetsToProcess"));
+
+  // If all sheets have been processed, stop the trigger
+  if (currentSheetIndex >= sheetsToProcess.length) {
+    Logger.log("All sheets processed. Deleting trigger.");
     deleteProcessBacklinkBatchTriggers();
     return;
   }
-  
+
+  // Get the current sheet by name
+  var sheetName = sheetsToProcess[currentSheetIndex];
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    Logger.log("Sheet not found: " + sheetName);
+    // Move on to the next sheet
+    scriptProperties.setProperty("currentSheetIndex", (currentSheetIndex + 1).toString());
+    scriptProperties.setProperty("currentRow", "2");
+    return;
+  }
+
   // To avoid running the script on empty rows(when rows to be processed is smaller than batch size), count only rows with a URL in column D.
   var urlData = sheet.getRange("D:D").getValues();
   // Assuming row 1 is header; count nonempty rows from row 2 onward.
   var inputRows = urlData.slice(1).filter(function(row) {
     return row[0] && row[0].toString().trim() !== "";
   }).length;
-    
-    // Use inputRows + 1 (to account for the header) as your last row.
+
+  // Use inputRows + 1 (to account for the header) as your last row.
   var lastRow = inputRows + 1;
-  
-  // Retrieve the current starting row from Script Properties.
-  var scriptProperties = PropertiesService.getScriptProperties();
-  var currentRow = parseInt(scriptProperties.getProperty("currentRow"), 10);
-  
-  // If the current row is beyond the data, then all rows have been processed.
-  if (currentRow > lastRow) {
-    Logger.log("All rows processed. Deleting minute trigger.");
-    deleteProcessBacklinkBatchTriggers();
-    return;
-  }
-  
+
   // Define the batch size (e.g., 250 rows per execution).
   var batchSize = 250;
   var endRow = currentRow + batchSize - 1;
-  
+
   // Make sure we do not exceed the last row.
   if (endRow > lastRow) {
     endRow = lastRow;
   }
-  
-  Logger.log("Processing rows " + currentRow + " to " + endRow);
-  
+
+  Logger.log("Processing " + sheetName + " rows " + currentRow + " to " + endRow);
+
   // Process this batch.
-  checkBacklinksForBatch(currentRow, endRow);
-  
-  // Update the current row for the next batch.
-  currentRow = endRow + 1;
-  scriptProperties.setProperty("currentRow", currentRow.toString());
-  
-  // If we've processed all rows, delete the minute trigger.
-  if (currentRow > lastRow) {
-    Logger.log("Batch processing complete. Deleting minute trigger.");
-    deleteProcessBacklinkBatchTriggers();
+  checkBacklinksForBatch(sheetName, currentRow, endRow);
+
+  // If we've processed all rows in the current sheet, move to the next one
+  if (endRow >= lastRow) {
+    scriptProperties.setProperty("currentSheetIndex", (currentSheetIndex + 1).toString());
+    scriptProperties.setProperty("currentRow", "2");
+  } else {
+    // Otherwise, continue processing the same sheet in the next run
+    scriptProperties.setProperty("currentRow", (endRow + 1).toString());
   }
 }
 
@@ -91,9 +103,9 @@ function processBacklinkBatch() {
  *
  * If a backlink is missing or errors occur, you might want to add the row to an email queue.
  */
-function checkBacklinksForBatch(startRow, endRow) {
+function checkBacklinksForBatch(sheetName, startRow, endRow) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("RAW DATA");
+  var sheet = ss.getSheetByName(sheetName);
   // Get all data from the sheet.
   var data = sheet.getDataRange().getValues();
   var currentTime = new Date();
@@ -223,7 +235,7 @@ function checkBacklinksForBatch(startRow, endRow) {
           errorMessage.includes("certificate") || 
           errorMessage.includes("handshake") || 
           errorMessage.includes("secure connection")) {
-        status = "unknown";
+        status = "unknown";``
       } else {
         status = "missing";
       }
