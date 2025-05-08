@@ -38,7 +38,7 @@ function processBacklinkBatch() {
 
   // If all sheets have been processed, stop the trigger
   if (currentSheetIndex >= sheetsToProcess.length) {
-    Logger.log("All sheets processed. Deleting trigger.");
+    Logger.log("All sheets processed. Deleting trigger.");``
     deleteProcessBacklinkBatchTriggers();
     return;
   }
@@ -181,8 +181,22 @@ function checkBacklinksForBatch(sheetName, startRow, endRow) {
         // Fetch the VEED URL.
         var veedResponse = UrlFetchApp.fetch(veedUrl, {muteHttpExceptions: true, followRedirects: true});
         if (veedResponse.getResponseCode() !== 200) {
-          status = "missing";
-          remark = "VEED fetch error: " + veedResponse.getResponseCode();
+          if (veedResponse.getResponseCode() === 400) {
+            // VEED fetch failed, but still try to look for any VEED links on the website
+            var websiteContent = websiteResponse.getContentText();
+            var veedPattern = /https?:\/\/(www\.)?veed\.io\/[^\s"'<>]*/gi;
+            var veedMatches = websiteContent.match(veedPattern);
+            if (veedMatches && veedMatches.length > 0) {
+              status = "live";
+              remark = "VEED fetch error: 400, but other VEED link(s) found: " + veedMatches.join(", ");
+            } else {
+              status = "missing";
+              remark = "VEED fetch error: 400 (no VEED links found on site)";
+            }
+          } else {
+            status = "missing";
+            remark = "VEED fetch error: " + veedResponse.getResponseCode();
+          }       
         } else {
           // Both pages are reachable. Now check if the website content contains the VEED URL.
           var websiteContent = websiteResponse.getContentText();
@@ -263,10 +277,9 @@ function checkBacklinksForBatch(sheetName, startRow, endRow) {
         remarkCell.setBackground("#1BB559");  // Pigment Green
       } else if (remark === "nofollow link (http version)") {
         remarkCell.setBackground("#1C9AB6");  // Blue Green
-      } else if (remark.includes("Different VEED link(s) found:")) {
+      } else if (remark.includes("Different VEED link(s) found:") || remark.includes("VEED fetch error: 400, but other VEED link(s) found:"))
         remarkCell.setBackground("#1BB58C"); // Mint
-      }
-    } else if (status === "missing") {
+    } else if (status === "missing") {``
       statusCell.setBackground("#C63A3A");  // Persian Red
       if (remark === "") {
         remarkCell.setBackground("#FFFFFF");  // White
