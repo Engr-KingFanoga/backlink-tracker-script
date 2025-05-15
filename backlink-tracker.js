@@ -38,7 +38,7 @@ function processBacklinkBatch() {
 
   // If all sheets have been processed, stop the trigger
   if (currentSheetIndex >= sheetsToProcess.length) {
-    Logger.log("All sheets processed. Deleting trigger.");``
+    Logger.log("All sheets processed. Deleting trigger.");
     deleteProcessBacklinkBatchTriggers();
     return;
   }
@@ -279,7 +279,7 @@ function checkBacklinksForBatch(sheetName, startRow, endRow) {
         remarkCell.setBackground("#1C9AB6");  // Blue Green
       } else if (remark.includes("Different VEED link(s) found:") || remark.includes("VEED fetch error: 400, but other VEED link(s) found:"))
         remarkCell.setBackground("#1BB58C"); // Mint
-    } else if (status === "missing") {``
+    } else if (status === "missing") {
       statusCell.setBackground("#C63A3A");  // Persian Red
       if (remark === "") {
         remarkCell.setBackground("#FFFFFF");  // White
