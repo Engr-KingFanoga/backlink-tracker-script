@@ -249,7 +249,7 @@ function checkBacklinksForBatch(sheetName, startRow, endRow) {
           errorMessage.includes("certificate") || 
           errorMessage.includes("handshake") || 
           errorMessage.includes("secure connection")) {
-        status = "unknown";``
+        status = "unknown";
       } else {
         status = "missing";
       }
